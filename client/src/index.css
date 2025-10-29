@@ -1,68 +1,66 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* Import globals (variables, animations, etc.) FIRST */
+@import './styles/globals.css';
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* Then apply Tailwind directives */
+@tailwind base;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* --- Custom Base Styles --- */
+/* These apply modifications ON TOP of Tailwind's base */
+@layer base {
+  * {
+    /* Example: Use CSS vars defined in globals.css */
+    border-color: var(--border, currentColor); 
+    /* Or use Tailwind classes if preferred */
+    /* @apply border-border; */
+    outline-color: var(--ring, currentColor);
+    /* @apply outline-ring/50; */ /* Ensure ring color is defined or adjust */
   }
-  a:hover {
-    color: #747bff;
+
+  body {
+    /* Use CSS vars defined in globals.css */
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; /* Moved from globals */
+    overflow-x: hidden; 
   }
-  button {
-    background-color: #f9f9f9;
+
+  html {
+     font-size: var(--font-size); 
+     scroll-behavior: smooth; 
+  }
+
+
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 { @apply text-2xl font-medium leading-normal; }
+    h2 { @apply text-xl font-medium leading-normal; }
+    h3 { @apply text-lg font-medium leading-normal; }
+    h4 { @apply text-base font-medium leading-normal; }
+    p { @apply text-base font-normal leading-normal; }
+    label { @apply text-base font-medium leading-normal; }
+    button { @apply text-base font-medium leading-normal; }
+    input { @apply text-base font-normal leading-normal; }
+  }
+
+  /* Date input styling */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+     filter: invert(1);
+     cursor: pointer;
+  }
+
+ /* Select dropdown styling */
+  select option {
+     background: var(--background-card, #0B1120); 
+     color: var(--foreground, white);
   }
 }
+
+
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar styles can go here or remain in globals.css */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: rgba(11, 17, 32, 0.5); }
+::-webkit-scrollbar-thumb { background: rgba(37, 99, 235, 0.5); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(37, 99, 235, 0.7); }
+
