@@ -8,7 +8,7 @@ import FloatingOrb from '../components/FloatingOrb';
 import { Armchair, X, Check } from 'lucide-react';
 import '../styles/SeatSelection.css'; // Import the new CSS file
 import { useDispatch } from 'react-redux';
-import { toggleSeat, setTotalPrice, setStep } from '../store/slices/bookingSlice';
+import { toggleSeat as toggleSeatRedux, setTotalPrice, setStep } from '../store/slices/bookingSlice';
 
 export default function SeatSelection() {
   const navigate = useNavigate();
@@ -106,16 +106,18 @@ export default function SeatSelection() {
   }, 0);
 
   const handleContinue = () => {
-    // **Redux Integration Step:**
-    // dispatch(clearSeats()); // Clear any previous selection
-    // selectedSeats.forEach(seatId => {
-    //   const row = parseInt(seatId.match(/\d+/)[0]);
-    //   const col = seatId.match(/[A-F]/)[0];
-    //   const status = seatMap.get(seatId) || 'available';
-    //   dispatch(toggleSeat({ id: seatId, price: getSeatPrice(status) }));
-    // });
-    // dispatch(setTotalPrice(totalPrice));
-    // dispatch(setStep(5));
+    if (selectedSeats.length === 0) {
+      alert('Please select at least one seat');
+      return;
+    }
+    
+    // Save to Redux
+    selectedSeats.forEach(seatId => {
+      const baseStatus = seatMap.get(seatId) || 'available';
+      dispatch(toggleSeatRedux({ id: seatId, price: getSeatPrice(baseStatus) }));
+    });
+    dispatch(setTotalPrice(totalPrice));
+    dispatch(setStep(5));
 
     navigate('/booking/review');
   };

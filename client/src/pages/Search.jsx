@@ -1,5 +1,5 @@
 // src/pages/Search.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import GlassCard from '../components/GlassCard';
@@ -9,10 +9,11 @@ import { Calendar, MapPin, Users, ArrowRight, Plane, TrendingUp } from 'lucide-r
 import { useDispatch } from 'react-redux';
 import { setSearchParams, setStep } from '../store/slices/bookingSlice';
 import { fetchFlights, clearFlights } from '../store/slices/flightsSlice';
+import { airports, trendingRoutes as mockTrendingRoutes } from '../data/mockData';
 
 export default function Search() {
   const navigate = useNavigate();
- const dispatch = useDispatch(); 
+  const dispatch = useDispatch();
   const [tripType, setTripType] = useState('roundtrip');
   const [searchData, setSearchData] = useState({
     from: '',
@@ -31,24 +32,24 @@ export default function Search() {
   };
 
   const handleSearch = () => {
-    // **Redux Integration Step:**
-   if (!searchData.from || !searchData.to || !searchData.departure) {
+    if (!searchData.from || !searchData.to || !searchData.departure) {
       alert("Please fill in departure/arrival locations and departure date.");
       return;
     }
-    dispatch(clearFlights()); // Clear previous results
-    dispatch(setSearchParams(searchData)); // Save search params in booking slice
-    dispatch(fetchFlights(searchData)); // Fetch new flight results
-    dispatch(setStep(2)); // Update booking step
-
+    dispatch(clearFlights());
+    dispatch(setSearchParams(searchData));
+    dispatch(fetchFlights(searchData));
+    dispatch(setStep(2));
     navigate('/search/results');
   };
 
-  const trendingRoutes = [
-    { from: 'New York', to: 'London', price: '$459', image: 'london skyline' },
-    { from: 'Los Angeles', to: 'Tokyo', price: '$689', image: 'tokyo skyline' },
-    { from: 'Miami', to: 'Paris', price: '$529', image: 'paris skyline' },
-  ];
+  const handleQuickSearch = (route) => {
+    setSearchData(prev => ({
+      ...prev,
+      from: route.from.code,
+      to: route.to.code,
+    }));
+  };
 
   return (
     <div className="relative min-h-screen px-4 pt-32 pb-20">
@@ -65,11 +66,11 @@ export default function Search() {
           className="text-center mb-12"
         >
           <h1 className="text-5xl md:text-6xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-[#2563EB] to-[#FACC15] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               Smart Flight Search
             </span>
           </h1>
-          <p className="text-gray-300 text-lg">
+          <p className="text-text-secondary text-lg">
             Discover the best routes with AI-powered recommendations
           </p>
         </motion.div>
@@ -86,8 +87,8 @@ export default function Search() {
                 whileTap={{ scale: 0.95 }}
                 className={`px-6 py-3 rounded-full transition-all duration-300 capitalize ${
                   tripType === type
-                    ? 'bg-gradient-to-r from-[#2563EB] to-[#1E40AF] text-white shadow-[0_0_30px_rgba(37,99,235,0.4)]'
-                    : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                    ? 'bg-gradient-primary text-white shadow-glow'
+                    : 'bg-white/5 text-text-secondary hover:bg-white/10'
                 }`}
               >
                 {type.replace('_', ' ')}
@@ -102,17 +103,22 @@ export default function Search() {
               whileHover={{ scale: 1.02 }}
               className="relative"
             >
-              <label className="block text-sm text-gray-400 mb-2">From</label>
+              <label className="block text-sm text-text-muted mb-2">From</label>
               <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#2563EB]" />
-                <input
-                  type="text"
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+                <select
                   name="from"
-                  placeholder="New York (JFK)"
                   value={searchData.from}
                   onChange={handleInputChange}
-                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#2563EB] focus:shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all"
-                />
+                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary focus:shadow-glow transition-all appearance-none"
+                >
+                  <option value="" className="bg-background-alt">Select departure city</option>
+                  {airports.map((airport) => (
+                    <option key={airport.code} value={airport.code} className="bg-background-alt">
+                      {airport.city} ({airport.code}) - {airport.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </motion.div>
 
@@ -121,17 +127,22 @@ export default function Search() {
               whileHover={{ scale: 1.02 }}
               className="relative"
             >
-              <label className="block text-sm text-gray-400 mb-2">To</label>
+              <label className="block text-sm text-text-muted mb-2">To</label>
               <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#FACC15]" />
-                <input
-                  type="text"
+                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary" />
+                <select
                   name="to"
-                  placeholder="London (LHR)"
                   value={searchData.to}
                   onChange={handleInputChange}
-                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#FACC15] focus:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
-                />
+                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-secondary focus:shadow-glow transition-all appearance-none"
+                >
+                  <option value="" className="bg-background-alt">Select arrival city</option>
+                  {airports.map((airport) => (
+                    <option key={airport.code} value={airport.code} className="bg-background-alt">
+                      {airport.city} ({airport.code}) - {airport.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </motion.div>
 
@@ -140,15 +151,16 @@ export default function Search() {
               whileHover={{ scale: 1.02 }}
               className="relative"
             >
-              <label className="block text-sm text-gray-400 mb-2">Departure</label>
+              <label className="block text-sm text-text-muted mb-2">Departure</label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#2563EB]" />
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
                 <input
                   type="date"
                   name="departure"
                   value={searchData.departure}
                   onChange={handleInputChange}
-                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#2563EB] focus:shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all"
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary focus:shadow-glow transition-all"
                 />
               </div>
             </motion.div>
@@ -161,15 +173,16 @@ export default function Search() {
                 whileHover={{ scale: 1.02 }}
                 className="relative"
               >
-                <label className="block text-sm text-gray-400 mb-2">Return</label>
+                <label className="block text-sm text-text-muted mb-2">Return</label>
                 <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#FACC15]" />
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary" />
                   <input
                     type="date"
                     name="return"
                     value={searchData.return}
                     onChange={handleInputChange}
-                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#FACC15] focus:shadow-[0_0_20px_rgba(250,204,21,0.3)] transition-all"
+                    min={searchData.departure || new Date().toISOString().split('T')[0]}
+                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-secondary focus:shadow-glow transition-all"
                   />
                 </div>
               </motion.div>
@@ -180,17 +193,17 @@ export default function Search() {
               whileHover={{ scale: 1.02 }}
               className="relative"
             >
-              <label className="block text-sm text-gray-400 mb-2">Passengers</label>
+              <label className="block text-sm text-text-muted mb-2">Passengers</label>
               <div className="relative">
-                <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#2563EB]" />
+                <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
                 <select
                   name="passengers"
                   value={searchData.passengers}
                   onChange={handleInputChange}
-                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#2563EB] focus:shadow-[0_0_20px_rgba(37,99,235,0.3)] transition-all appearance-none"
+                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-primary focus:shadow-glow transition-all appearance-none"
                 >
                   {[1, 2, 3, 4, 5, 6].map((num) => (
-                    <option key={num} value={num} className="bg-[#0B1120]">
+                    <option key={num} value={num} className="bg-background-alt">
                       {num} {num === 1 ? 'Passenger' : 'Passengers'}
                     </option>
                   ))}
@@ -228,11 +241,11 @@ export default function Search() {
                   ease: "easeInOut",
                 }}
               >
-                <TrendingUp className="w-8 h-8 text-[#FACC15]" />
+                <TrendingUp className="w-8 h-8 text-secondary" />
               </motion.div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold mb-1">AI-Powered Insights</h3>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-text-muted">
                   Based on your search patterns, we recommend booking 3-4 weeks in advance for the best prices.
                 </p>
               </div>
@@ -247,17 +260,18 @@ export default function Search() {
           transition={{ duration: 0.6, delay: 0.6 }}
         >
           <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
-            <Plane className="w-6 h-6 text-[#2563EB]" />
+            <Plane className="w-6 h-6 text-primary" />
             Trending Routes
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {trendingRoutes.map((route, index) => (
+            {mockTrendingRoutes.slice(0, 3).map((route, index) => (
               <GlassCard
-                key={index}
+                key={route.id}
                 delay={0.6 + index * 0.1}
-                className="cursor-pointer group"
+                className="cursor-pointer group hover:shadow-glow transition-all"
+                onClick={() => handleQuickSearch(route)}
               >
-                <div className="aspect-video bg-gradient-to-br from-[#2563EB]/20 to-[#FACC15]/20 rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
+                <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-xl mb-4 flex items-center justify-center relative overflow-hidden">
                   <motion.div
                     whileHover={{ scale: 1.1 }}
                     className="text-4xl"
@@ -265,21 +279,24 @@ export default function Search() {
                     ✈️
                   </motion.div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute top-3 right-3 bg-secondary/90 text-background px-2 py-1 rounded-full text-xs font-bold">
+                    {route.savings} OFF
+                  </div>
                 </div>
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <p className="text-sm text-gray-400">From</p>
-                    <p className="font-medium">{route.from}</p>
+                    <p className="text-sm text-text-muted">From</p>
+                    <p className="font-medium">{route.from.city}</p>
                   </div>
-                  <ArrowRight className="w-5 h-5 text-[#2563EB] mt-4" />
+                  <ArrowRight className="w-5 h-5 text-primary mt-4" />
                   <div className="text-right">
-                    <p className="text-sm text-gray-400">To</p>
-                    <p className="font-medium">{route.to}</p>
+                    <p className="text-sm text-text-muted">To</p>
+                    <p className="font-medium">{route.to.city}</p>
                   </div>
                 </div>
                 <div className="flex justify-between items-center pt-4 border-t border-white/10">
-                  <span className="text-sm text-gray-400">Starting from</span>
-                  <span className="text-xl font-bold text-[#FACC15]">{route.price}</span>
+                  <span className="text-sm text-text-muted">Starting from</span>
+                  <span className="text-xl font-bold text-secondary">{route.price}</span>
                 </div>
               </GlassCard>
             ))}
